@@ -1,0 +1,118 @@
+LIBRARY
+EXPORTS
+    
+    LibK_GetVersion
+    LibK_GetContext
+    LibK_SetContext
+    LibK_SetCleanupCallback
+    LibK_LoadDriverAPI
+    LibK_CopyDriverAPI
+    LibK_GetProcAddress
+    LibK_SetDefaultContext
+    LibK_GetDefaultContext
+    LibK_Context_Init
+    LibK_Context_Free
+    
+    UsbK_Init
+    UsbK_ClaimInterface
+    UsbK_ReleaseInterface
+    UsbK_SetAltInterface
+    UsbK_GetAltInterface
+    UsbK_GetDescriptor
+    UsbK_ControlTransfer
+    UsbK_SetPowerPolicy
+    UsbK_GetPowerPolicy
+    UsbK_SetConfiguration
+    UsbK_GetConfiguration
+    UsbK_ResetDevice
+    UsbK_Initialize
+    UsbK_Free
+    UsbK_SelectInterface
+    UsbK_GetAssociatedInterface
+    UsbK_Clone
+    UsbK_QueryInterfaceSettings
+    UsbK_QueryDeviceInformation
+    UsbK_SetCurrentAlternateSetting
+    UsbK_GetCurrentAlternateSetting
+    UsbK_QueryPipe
+    UsbK_SetPipePolicy
+    UsbK_GetPipePolicy
+    UsbK_ReadPipe
+    UsbK_WritePipe
+    UsbK_ResetPipe
+    UsbK_AbortPipe
+    UsbK_FlushPipe
+    UsbK_IsoReadPipe
+    UsbK_IsoWritePipe
+    UsbK_GetCurrentFrameNumber
+    UsbK_GetOverlappedResult
+    UsbK_GetProperty
+    
+    LstK_Init
+    LstK_InitEx
+    LstK_Free
+    LstK_Enumerate
+    LstK_Current
+    LstK_MoveNext
+    LstK_MoveReset
+    LstK_FindByVidPid
+    LstK_Count
+    LstK_Sync
+    LstK_Clone
+    LstK_CloneInfo
+    LstK_DetachInfo
+    LstK_AttachInfo
+    LstK_FreeInfo
+    
+    HotK_Init
+    HotK_Free
+    HotK_FreeAll
+    
+    OvlK_Acquire
+    OvlK_Release
+    OvlK_Init
+    OvlK_Free
+    OvlK_GetEventHandle
+    OvlK_Wait
+    OvlK_WaitOldest
+    OvlK_WaitOrCancel
+    OvlK_WaitAndRelease
+    OvlK_IsComplete
+    OvlK_ReUse
+    
+    StmK_Init
+    StmK_Free
+    StmK_Start
+    StmK_Stop
+    StmK_Read
+    StmK_Write
+
+    IsoK_Init
+    IsoK_Free
+    IsoK_SetPackets
+    IsoK_SetPacket
+    IsoK_GetPacket
+    IsoK_EnumPackets
+    IsoK_ReUse
+
+	WinUsb_Initialize
+	WinUsb_Free
+	WinUsb_GetAssociatedInterface
+	WinUsb_GetDescriptor
+	WinUsb_QueryInterfaceSettings
+	WinUsb_QueryDeviceInformation
+	WinUsb_SetCurrentAlternateSetting
+	WinUsb_GetCurrentAlternateSetting
+	WinUsb_QueryPipe
+	WinUsb_SetPipePolicy
+	WinUsb_GetPipePolicy
+	WinUsb_ReadPipe
+	WinUsb_WritePipe
+	WinUsb_ControlTransfer
+	WinUsb_ResetPipe
+	WinUsb_AbortPipe
+	WinUsb_FlushPipe
+	WinUsb_SetPowerPolicy
+	WinUsb_GetPowerPolicy
+	WinUsb_GetOverlappedResult
+

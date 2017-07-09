@@ -1,0 +1,40 @@
+TARGETNAME = $(G_TARGET_OUTPUT_NAME)
+TARGETPATH = $(TARGET_OUTPUT_BASE_DIR)\$(TARGET_OUTPUT_FILENAME_EXT)
+
+WDK_OUTPUT_SUBDIR=$(_BUILDARCH)
+!IF "$(_BUILDARCH)"=="x86"
+WDK_OUTPUT_SUBDIR=i386
+!ENDIF
+
+TARGETTYPE = LIBRARY
+USE_MSVCRT = 1
+
+!IFNDEF MSC_WARNING_LEVEL
+MSC_WARNING_LEVEL=/W4 /WX
+!ENDIF
+
+C_DEFINES=$(C_DEFINES) -DKWDK_COMPILER
+
+TARGETLIBS=$(SDK_LIB_PATH)\kernel32.lib \
+           $(SDK_LIB_PATH)\advapi32.lib \
+           $(SDK_LIB_PATH)\user32.lib \
+		   $(SDK_LIB_PATH)\setupapi.lib
+
+INCLUDES=.\;..\;..\..\includes;$(DDK_INC_PATH);$(INCLUDES)
+
+SOURCES= \
+		..\lusbk_bknd_unsupported.c \
+		..\lusbk_bknd_libusb0.c \
+		..\lusbk_bknd_libusbk.c \
+		..\lusbk_bknd_winusb.c \
+		..\lusbk_debug_view_output.c \
+		..\lusbk_device_list.c \
+		..\lusbk_ioctl.c \
+		..\lusbk_overlapped.c \
+		..\lusbk_stack_collection.c \
+		..\lusbk_usb.c \
+		..\lusbk_usb_iso.c \
+		..\lusbk_handles.c \
+		..\lusbk_hot_plug.c \
+		..\lusbk_queued_stream.c \
+		..\lusbk_wrapper_winusb.c

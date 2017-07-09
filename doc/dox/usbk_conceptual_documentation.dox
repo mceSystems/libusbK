@@ -1,0 +1,160 @@
+//! Self-contained end-user installer applications created by InfWizard.
+/*!
+* \page usbk_installers Creating Client Installers With InfWizard
+*
+* Summary:
+* - libusbK client installers combine proven LZMA sfx technology with a professional driver installation tool
+*   creating a tightly packed and feature rich solution for end-user driver installations.
+*
+* FACTS:
+* - Packaged in a modified LZMA sfx module. See: http://7zsfx.info/en. This module is highly configurable
+*   with installer-like options.
+* - Uses dpinst.exe, by Microsoft. Dpinst.exe is a robust multi-language driver installation utility. This
+*   utility has a set of configurable wizard screens to ease end-user installations. Features also include:
+*   - Install multiple .inf files at once, each can contain multiple devices with multiple hardware
+*     identifiers.
+*   - Uninstall via add/remove programs. (removes from driver-store)
+*   - Silent/wizardless operation modes.
+*   - Simplistic xml-based configuration. (dpinst.xml)
+*   - Customizable EULA.
+*   - For a complete list of dpinst.exe features see:
+*     http://msdn.microsoft.com/en-us/library/windows/hardware/ff553383%28v=vs.85%29.aspx
+*
+* ORDER OF OPERATIONS (InstallDriver.exe - default config):
+* -# End-user launches InstallDriver.exe. If not already running with elevated permssions, the user will
+*    immediately be prompted with a UAC warning:
+*    http://msdn.microsoft.com/en-us/library/windows/desktop/aa511445.aspx If you do not sign
+*    InstallDriver.exe with a code signing certificate, the UAC prompt will display "Unknown Name" and
+*    "Unknown Publisher" in the message box. Purchasing a cheap code signing certificate will allow you to
+*    set these values.
+* -# SFX module:Extracts driver setup files to a temporary folder.
+* -# SFX module:Runs dpscat.exe. This utility creates self signed catalog files from .inf files and the
+*    binaries they reference. These signed catalog files prevent windows from prompting the user with an
+*    unverified publisher warning: http://www.codeproject.com/KB/system/wiisensor/wiisensor10.png
+* -# SFX module:Runs dpinst.exe. Device drivers are pre-installed. If the device has not been connected it
+*    will be available for use upon first connection. All devices known to windows matching your hardware IDs
+*    will be flagged for re-install. If the device is currently connected, drivers are immediately installed,
+*    the device is retarted and available immediately.
+* -# SFX module:On wizard exit, removes the temporary extraction folder.
+*
+* ORDER OF OPERATIONS (re-pack-files.cmd - default config):
+* -# The following files are compressed into a normal LZMA .7z file:
+*    - All ".inf" files in the current folder
+*    - All files and folders starting with "dpinst" in the current folder.
+*    - All files matching "dpscat.*" in the current folder.
+*    - All files and folders in the x86, amd64, and data sub-folders. (recursive)
+* -# The SFX module, SFX config file and .7z file are merged together using a binary copy.
+*    eg: COPY /B sfx_module+sfx_config+files.7z installer.exe
+*
+* \note Run the "re-pack-files.cmd" batch file after modifying any part of the package.
+*
+* CUSTOMIZATION:
+* - Customizing the SFX Module:
+*   - SFX customization is done in the "7zDP_LZMA.cfg" file.
+*   - See http://7zsfx.info/en/
+* - Customizing the driver installation:
+*   - dpinst.exe customization is done in the "dpinst.xml" file.
+*   - See http://msdn.microsoft.com/en-us/library/windows/hardware/ff553383%28v=vs.85%29.aspx
+* - Other customization:
+*   - .inf file can be hand modified as needed.
+*   - Files can be added or removed as needed.
+*   - Icon and resource text can be changed with a standard resource editor such as ResourcHacker:
+*     http://www.angusj.com/resourcehacker/
+*
+*/
+
+//! Where to begin and how to get started writing your new libusbK based application.
+/*!
+
+\page usbk_usage Using the Library
+
+<TABLE>
+	<TR><TH colspan=2>This library is divided into the following sections</TH></TR>
+	<TR><TD>\ref libk (\b LibK)</TD><TD>\copybrief libk</TD></TR>
+	<TR><TD>\ref usbk (\b UsbK)</TD><TD>\copybrief usbk</TD></TR>
+	<TR><TD>\ref lstk (\b LstK)</TD><TD>\copybrief lstk</TD></TR>
+	<TR><TD>\ref ovlk (\b OvlK)</TD><TD>\copybrief ovlk</TD></TR>
+	<TR><TD>\ref hotk (\b HotK)</TD><TD>\copybrief hotk</TD></TR>
+	<TR><TD>\ref stmk (\b StmK)</TD><TD>\copybrief stmk</TD></TR>
+	<TR><TD>\ref isok (\b IsoK)</TD><TD>\copybrief isok</TD></TR>
+</TABLE>
+  
+<H2>Getting Started</H2>
+
+\note
+Before you begin, connect your device and use the \b kList test application to verify one of the
+\ref usbk_drivers has been properly installed. If kList cannot find your device then refer back to
+\ref usbk_installing.
+
+There are several examples to help along the way, but the following are meant for user new to the library.
+These examples show basic library functionality like finding and opening a device:
+-# \b show-device.c
+-# \b open-device.c
+-# \b load-driver-api.c
+
+<HR>
+
+<B>Writing the code:</B><BR>
+-# Init and Free
+   - All modules implement an \b Init and a \b Free function for creating and and detroying a handle or
+     context specific to the module.
+-# Handles
+   - Each \ref KLIB_HANDLE implements a user assignable cleanup callback function and a user context pointer.
+     See \ref LibK_SetCleanupCallback, \ref LibK_SetContext, \ref LibK_GetContext, \ref LibK_SetDefaultContext, \ref LibK_GetDefaultContext.
+     All modules, with the exception of \ref isok, have their own managed handle type which support these functions.
+-# Function Returns
+   - Nearly all function have a \c BOOL return type. If a function does not complete as expected it returns
+     FALSE (0). To get extended error information, the user must call the \c GetLastError() Windows API
+     function. These are very generalized errors, the Windows API/MSDN provides ways to lookup error strings
+     for the extended error number but is advisable not to use them! Instead refer to this documentation
+     under the function that caused the error.
+-# Structure Packing
+   - The following structures are packed at \b 1 byte:
+     - All \b USB prefixed types
+     - \ref KISO_CONTEXT
+     - \ref KISO_PACKET
+     - \ref WINUSB_SETUP_PACKET
+   - All other structures assume natural packing.
+
+<HR>
+
+<B>Building the examples:</B><BR>
+-# Examples should be built from the dev-kit package. If you have not allready downloaded it, get it now.
+-# Choose your compiler/IDE:
+   - <B>VStudio 2008</B>: Each example has a project file. All examples are contained within an examples solution.
+   - <B>WDK</B>: Each example has a WDK sources file. You can use standard WDK building conventions to build all or a
+     single example.
+     - Get and install \wdk.
+     - Open a build environment command prompt
+     - Navigate to the \b examples folder to build all or the examples project to build one.
+     - Execute: <B>build /cegZ</B>
+   - <B>Mingw64</B>: Each example has a Mingw64 build script for 32bit or 64bit GCC builds. All examples are
+     contained in a single solution-like build script which can be used to build all or any of the examples.
+     - Get and install <A href="http://tdm-gcc.tdragon.net/download">TDM64-GCC</A>
+     - Open a Mingw64 build command prompt.
+     - Navigate to the \b examples folder and execute make:
+	   - Mingw64 project make syntax: <PRE>make [arch=amd64/x86] [Example name]</PRE>
+	   - Mingw64 solution make syntax: <PRE>make [all/multi-all]</PRE>
+	   - <B>make</B> builds all 32bit examples.
+	   - <B>make arch=amd64</B> builds all 64bit examples.
+	   - <B>make show-device</B> builds the 32bit show-device example.
+	   - <B>make multi-all</B> builds all 32bit and 64bit examples.  
+
+<HR>
+
+<B>Running the examples:</B><BR>
+
+\note
+The output EXEs will be placed in different locations depending on the compiler/IDE used.  Generally they
+are placed in compiler/IDE default locations.
+
+\attention
+Most examples are meant to be modifed prior to use.  It is not advisabe to run these examples as-is before
+reviewing the example code. The one exception is if your device is an official Benchmark USB Device.
+
+
+\htmlonly
+<P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P><P>&nbsp;</P>
+\endhtmlonly
+
+*/

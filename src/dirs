@@ -1,0 +1,7 @@
+DIRS= \
+     dll \
+     dpscat \
+     kBench \
+     kList \
+     lib \
+     sys

@@ -1,0 +1,694 @@
+//! Registers a hot plug handle for USB device notification of any supported device.
+/*!
+* \example hot-plug-monitor.c
+*
+* \par hot-plug-monitor example:
+* -# Initializes a new HotK (hot-plug) handle.
+* -# Writes arrival/removal event notifications to console output as they occur. 
+* -# Repeats step #2 until the \b Q key is pressed.
+* -# Frees the HotK (hot-plug) handle created in step #1
+*
+\par Console Output
+\verbatim
+Initialize a HotK device notification event monitor..
+Looking for devices with instances IDs matching the pattern '*'..
+Press 'q' to exit..
+
+HotK monitor initialized. ErrorCode: 00000000h
+
+[ARRIVAL] Benchmark Device (Microchip Technology, Inc.) [libusbK]
+  InstanceID          : USB\VID_04D8&PID_FA2E\LUSBW1
+  DeviceInterfaceGUID : {716cdf1f-418b-4b80-a07d-1311dffdc8b8}
+  DevicePath          : \\?\USB#VID_04D8&PID_FA2E#LUSBW1#{716cdf1f-418b-4b80-a07d-1311dffdc8b8}
+
+
+[REMOVAL] Benchmark Device (Microchip Technology, Inc.) [libusbK]
+  InstanceID          : USB\VID_04D8&PID_FA2E\LUSBW1
+  DeviceInterfaceGUID : {716cdf1f-418b-4b80-a07d-1311dffdc8b8}
+  DevicePath          : \\?\USB#VID_04D8&PID_FA2E#LUSBW1#{716cdf1f-418b-4b80-a07d-1311dffdc8b8}
+
+HotK monitor closed. ErrorCode: 00000000h
+\endverbatim
+*/
+
+//! Displays the connected devices that can be used by libusbK.
+/*!
+* \example show-device.c
+*
+* \par show-device example:
+* -# Initializes a new LstK (device list) handle.
+* -# Gets the number of devices contained in the device list.
+* -# Demonstrates using \ref LstK_FindByVidPid to locate the example VID/PID.
+* -# Demonstrates using \ref LstK_MoveReset and \ref LstK_MoveNext to locate the example VID/PID.
+* -# Demonstrates using \ref LstK_Enumerate for printing a single line description of each device list element.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+USB\VID_04D8&PID_FA2E\LUSBW1: Benchmark Device (Travis Robinson)
+Example device connected!
+\endverbatim
+*/
+
+//! Locates and opens a device by vid/pid.
+/*!
+* \example open-device.c
+*
+* \par open-device example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Prints pipe information.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+Pipe Information:
+  PipeId=0x01 PipeType=0x02 Interval=0 MaximumPacketSize=32
+  PipeId=0x81 PipeType=0x02 Interval=0 MaximumPacketSize=32
+\endverbatim
+*/
+
+//! Loads a dynamic driver api for use with all drivers and opens the device.
+/*!
+* \example load-driver-api.c
+*
+* \par load-driver-api example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Loads a dynamic driver API set specific to the devices driver.
+* -# Initializes a new UsbK (usb device) handle.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+libusbK driver api loaded!
+Device opened successfully!
+\endverbatim
+*/
+
+//! Configures device interface/alt settings.
+/*!
+* \example config-interface.c
+*
+* \par config-interface example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Claims the specified interface. (re-define at top of example)
+* -# Finds the specified interface/alt setting. (re-define at top of example)
+* -# Finds the specified read and write pipes. (re-define at top of example)
+* -# Sets the specified alternate setting as the "active" interface.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+Interface/alt setting number 00h/00h found!
+Read pipe 81h found!
+Write pipe 01h found!
+Alternate setting 00h selected!
+\endverbatim
+*/
+
+//! Asynchronously loops data from one endpoint to another.
+/*!
+* \example xfer-async-loop.c
+*
+* \par xfer-async-loop example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Transfers an application defined number of packets from a read pipe to a write pipe.
+     (see example comments)
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+[Tx-001] PipeID=01h Length=512
+[Tx-002] PipeID=01h Length=512
+[Tx-003] PipeID=01h Length=512
+[Rx-001] PipeID=81h Length=512
+[Tx-004] PipeID=01h Length=512
+[Rx-002] PipeID=81h Length=512
+[Tx-005] PipeID=01h Length=512
+[Rx-003] PipeID=81h Length=512
+[Tx-006] PipeID=01h Length=512
+[Rx-004] PipeID=81h Length=512
+[Tx-007] PipeID=01h Length=512
+[Rx-005] PipeID=81h Length=512
+[Tx-008] PipeID=01h Length=512
+[Rx-006] PipeID=81h Length=512
+[Tx-009] PipeID=01h Length=512
+[Rx-007] PipeID=81h Length=512
+[Tx-010] PipeID=01h Length=512
+[Rx-008] PipeID=81h Length=512
+[Tx-011] PipeID=01h Length=512
+[Rx-009] PipeID=81h Length=512
+[Tx-012] PipeID=01h Length=512
+[Rx-010] PipeID=81h Length=512
+[Rx-011] PipeID=81h Length=512
+[Rx-012] PipeID=81h Length=512
+\endverbatim
+*/
+
+//! Synchronously completes an application defined number of transfers.
+/*!
+* \example xfer-sync.c
+*
+* \par xfer-sync example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Configures the benchmark test device to accept/send data.
+* -# Submits/Completes \c SYNC_TRANSFER_COUNT number of I/O request one at a time.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+Transfer #0 completed with 4096 bytes.
+Transfer #1 completed with 4096 bytes.
+Transfer #2 completed with 4096 bytes.
+Transferred 12288 bytes in 3 transfers. errorCode=00000000h
+\endverbatim
+*/
+
+//! Asynchronously submits an application defined number of transfers.
+/*!
+* \example xfer-async.c
+*
+* \par xfer-async example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Configures the benchmark test device to accept/send data.
+* -# Initializes a new OvlPoolK (overlapped pool) handle.
+* -# Submits \c ASYNC_PENDING_IO_COUNT number of I/O request.
+* -# Completes all I/O request submitted above.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the OvlPoolK (overlapped pool) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+Transfer #0 submitted for 4096 bytes.
+Transfer #1 submitted for 4096 bytes.
+Transfer #2 submitted for 4096 bytes.
+Transfer #0 completed with 4096 bytes.
+Transfer #1 completed with 4096 bytes.
+Transfer #2 completed with 4096 bytes.
+Transferred 12288 bytes in 3 transfers. errorCode=00000000h
+\endverbatim
+*/
+
+//! Asynchronously streams data to or from an endpoint.
+/*!
+* \example xfer-stream.c
+*
+* \par xfer-stream example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Configures the benchmark test device to accept/send data.
+* -# Initializes a new stream handle.
+* -# Starts the stream.
+* -# Continually transfers data until a user defined stop/start point is reached.
+* -# Stops and starts the stream.
+* -# Repeats the above two steps until a key is pressed.
+* -# Stops and frees the stream.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+[Init  Stream] result = 00000000h
+[Start Stream] result = 00000000h
+Transferred bytes:524288 BPS:185559705.08
+Transferred bytes:159744 BPS:3444001.36
+Transferred bytes:159744 BPS:2128927.06
+Transferred bytes:167936 BPS:1694587.83
+Transferred bytes:163840 BPS:1473756.41
+Transferred bytes:163840 BPS:1343928.97
+Transferred bytes:167936 BPS:1259668.21
+Transferred bytes:167936 BPS:1199183.22
+[StreamResult] Bytes-total:1675264 Seconds-total:1.397 BPS-average:1199183.22
+Transferred bytes:172032 BPS:876132.77
+Transferred bytes:167936 BPS:858126.93
+Transferred bytes:163840 BPS:843762.19
+Transferred bytes:163840 BPS:838453.05
+Transferred bytes:163840 BPS:834713.10
+Transferred bytes:163840 BPS:832090.60
+Transferred bytes:163840 BPS:830226.44
+Transferred bytes:163840 BPS:828502.37
+Transferred bytes:167936 BPS:829741.23
+Transferred bytes:163840 BPS:828706.57
+[StreamResult] Bytes-total:1654784 Seconds-total:1.997 BPS-average:828706.57
+Transferred bytes:167936 BPS:860579.17
+Transferred bytes:159744 BPS:828717.06
+Transferred bytes:159744 BPS:819513.85
+Transferred bytes:163840 BPS:819588.39
+Transferred bytes:159744 BPS:815706.23
+Transferred bytes:163840 BPS:816251.25
+Transferred bytes:159744 BPS:813581.03
+Transferred bytes:163840 BPS:814108.63
+Transferred bytes:163840 BPS:815067.72
+Transferred bytes:163840 BPS:815427.14
+[StreamResult] Bytes-total:1626112 Seconds-total:1.994 BPS-average:815427.14
+[Stop  Stream] result = 00000000h
+\endverbatim
+*/
+
+//! Gets, sets, and tests the \c PIPE_TRANSFER_TIMEOUT policy.
+/*!
+* \example pipe-policy-timeout.c
+*
+* \par pipe-policy-timeout example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Gets the pipe transfer timeout policy value, sets it, and gets it a second time.
+* -# Configures the benchmark test device to not accept/send data.
+* -# Initializes a new OvlPoolK (overlapped pool) handle.
+* -# Submits transfers and estimates the compeletion timeout duration. 
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the OvlPoolK (overlapped pool) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+[81h] Getting Pipe-Timeout..
+[81h] Pipe-Timeout is 0
+[81h] Setting Pipe-Timeout to 10..
+[81h] Getting Pipe-Timeout..
+[81h] Pipe-Timeout is 10
+[81h] Transfer-Begin #1..
+[81h] Transfer-Begin #2..
+[81h] Transfer-Duration: 9.66 ms
+[81h] Transfer-Begin #3..
+[81h] Transfer-Duration: 8.94 ms
+[81h] Transfer-Begin #4..
+[81h] Transfer-Duration: 9.24 ms
+\endverbatim
+*/
+
+//! Performs a one-shot isochronous transfer.
+/*!
+* \example xfer-iso.c
+*
+* \par  xfer-iso example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Configures the benchmark test device to accept/send data.
+* -# Initializes a IsoK (iso context) handle.
+* -# Sets the iso packet offsets.
+* -# Initializes a new OvlPoolK (overlapped pool) handle.
+* -# Submits/Completes 1 isochronous transfer.
+* -# Reports isochronous transfer packet information.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle.
+* -# Frees the IsoK (iso context) handle.
+* -# Frees the OvlPoolK (overlapped pool) handle.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+ISO StartFrame=24905D5Ch ErrorCount=0 Transferred=2048
+  IsoPacket[0] Length=64 Status=00000000h
+  Data:00h 00h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[1] Length=64 Status=00000000h
+  Data:00h 01h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[2] Length=64 Status=00000000h
+  Data:00h 02h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[3] Length=64 Status=00000000h
+  Data:00h 03h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[4] Length=64 Status=00000000h
+  Data:00h 04h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[5] Length=64 Status=00000000h
+  Data:00h 05h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[6] Length=64 Status=00000000h
+  Data:00h 06h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[7] Length=64 Status=00000000h
+  Data:00h 07h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[8] Length=64 Status=00000000h
+  Data:00h 08h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[9] Length=64 Status=00000000h
+  Data:00h 09h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[10] Length=64 Status=00000000h
+  Data:00h 0Ah 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[11] Length=64 Status=00000000h
+  Data:00h 0Bh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[12] Length=64 Status=00000000h
+  Data:00h 0Ch 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[13] Length=64 Status=00000000h
+  Data:00h 0Dh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[14] Length=64 Status=00000000h
+  Data:00h 0Eh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[15] Length=64 Status=00000000h
+  Data:00h 0Fh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[16] Length=64 Status=00000000h
+  Data:00h 10h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[17] Length=64 Status=00000000h
+  Data:00h 11h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[18] Length=64 Status=00000000h
+  Data:00h 12h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[19] Length=64 Status=00000000h
+  Data:00h 13h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[20] Length=64 Status=00000000h
+  Data:00h 14h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[21] Length=64 Status=00000000h
+  Data:00h 15h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[22] Length=64 Status=00000000h
+  Data:00h 16h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[23] Length=64 Status=00000000h
+  Data:00h 17h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[24] Length=64 Status=00000000h
+  Data:00h 18h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[25] Length=64 Status=00000000h
+  Data:00h 19h 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[26] Length=64 Status=00000000h
+  Data:00h 1Ah 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[27] Length=64 Status=00000000h
+  Data:00h 1Bh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[28] Length=64 Status=00000000h
+  Data:00h 1Ch 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[29] Length=64 Status=00000000h
+  Data:00h 1Dh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[30] Length=64 Status=00000000h
+  Data:00h 1Eh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+
+
+  IsoPacket[31] Length=64 Status=00000000h
+  Data:00h 1Fh 02h 03h 04h 05h 06h 07h 08h 09h 0Ah 0Bh 0Ch 0Dh 0Eh 0Fh
+       10h 11h 12h 13h 14h 15h 16h 17h 18h 19h 1Ah 1Bh 1Ch 1Dh 1Eh 1Fh
+       20h 21h 22h 23h 24h 25h 26h 27h 28h 29h 2Ah 2Bh 2Ch 2Dh 2Eh 2Fh
+       30h 31h 32h 33h 34h 35h 36h 37h 38h 39h 3Ah 3Bh 3Ch 3Dh 3Eh 3Fh
+\endverbatim
+*/
+
+//! Reads a specified number of ISO transfers.
+/*!
+* \example xfer-iso-read.c
+*
+* \par  xfer-iso-read example:
+* -# Create a new log file.
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Selects interface by pipe id and get descriptors.
+* -# Sets the desired alternate setting.
+* -# Configures the benchmark test device to send data.
+* -# Allocates iso buffer resources.
+* -# Starts reading until an error occurs or MAX_TRANSFERS_TOTAL is reached.
+* -# Reports isochronous transfer packet information to log file.
+* -# Cancels all transfers left outstanding.
+* -# Frees the iso buffer resources.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle.
+* -# Closes log file.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+
+\endverbatim
+*/
+
+//! Gets, sets, various pipe policies and transfers synchronously.
+/*!
+* \example pipe-policy-other.c
+*
+* \par pipe-polcy-other example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Gets and sets various pipe policies.
+* -# Configures the benchmark test device to not accept/send data.
+* -# Submits/Completes \c SYNC_TRANSFER_COUNT number of I/O request one at a time.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+Transfer #0 completed with 4096 bytes.
+Transfer #1 completed with 4096 bytes.
+Transfer #2 completed with 4096 bytes.
+Transferred 12288 bytes in 3 transfers. errorCode=00000000h
+\endverbatim
+*/
+
+//! Enables auto suspend, sets suspend timeout and transfers synchronously.
+/*!
+* \example power-policy-suspend.c
+*
+* \par power-policy-suspend example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Gets the \b AUTO_SUSPEND and the \b SUSPEND_DELAY power policy values.
+* -# Toggles the \b AUTO_SUSPEND power policy value.
+* -# If \b AUTO_SUSPEND was enabled in the previous step, the \b SUSPEND_DELAY power policy is changed to a different value.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+RUN #1
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+[NOTE] If the DeviceIdleEnabled policy is not set in the .inf file when
+       the device is installed, the AUTO_SUSPEND policy will be ignored.
+Device opened successfully!
+AUTO_SUSPEND  is currently enabled.
+SUSPEND_DELAY is set to 5000 ms
+Set AUTO_SUSPEND = Off.
+
+RUN #2
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+[NOTE] If the DeviceIdleEnabled policy is not set in the .inf file when
+       the device is installed, the AUTO_SUSPEND policy will be ignored.
+Device opened successfully!
+AUTO_SUSPEND  is currently disabled.
+Set AUTO_SUSPEND = On.
+Set SUSPEND_DELAY = 10000 ms
+
+RUN #3
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+[NOTE] If the DeviceIdleEnabled policy is not set in the .inf file when
+       the device is installed, the AUTO_SUSPEND policy will be ignored.
+Device opened successfully!
+AUTO_SUSPEND  is currently enabled.
+SUSPEND_DELAY is set to 10000 ms
+Set AUTO_SUSPEND = Off.
+
+RUN #4
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+[NOTE] If the DeviceIdleEnabled policy is not set in the .inf file when
+       the device is installed, the AUTO_SUSPEND policy will be ignored.
+Device opened successfully!
+AUTO_SUSPEND  is currently disabled.
+Set AUTO_SUSPEND = On.
+Set SUSPEND_DELAY = 100 ms
+\endverbatim
+*/
+
+//!Sends various vendor specific control requests synchronously.
+/*!
+* \example xfer-control.c
+*
+* \par xfer-control example:
+* -# Finds a device by vid/pid (use vid=hhhh, pid=hhhhh and the command line).
+* -# Initializes a new UsbK (usb device) handle.
+* -# Sends a control request for the device descriptor.
+* -# Sends a vendor-specific HostToDevice request to set the benchmark vendor buffer.
+* -# Sends a vendor-specific DeviceToHost request to get the benchmark vendor buffer.
+* -# Compares and reports before and after results of the benchmark vendor buffer.
+* -# Frees the UsbK (usb device) handle.
+* -# Frees the LstK (device list) handle created in step #1.
+*
+* \par Console Output
+* \verbatim
+Looking for device vid/pid 04D8/FA2E..
+Using 04D8:FA2E (LUSBW1): Benchmark Device - Microchip Technology, Inc.
+Device opened successfully!
+vendorBuffer: ABC=ABC
+\endverbatim
+*/
