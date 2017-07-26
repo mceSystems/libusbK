@@ -427,7 +427,7 @@ KUSB_EXP BOOL KUSB_API UsbK_GetCurrentAlternateSetting(
 	Mem_Zero(&request, sizeof(request));
 	request.intf.interface_number = sharedInterface->ID;
 
-	success = SubmitSimpleSyncRequest(LIBUSBK_IOCTL_GET_INTERFACE);
+	success = SubmitSimpleSyncRequest(LIBUSB_IOCTL_GET_INTERFACE);
 	ErrorNoSet(!success, Error, "Failed getting AltSettingNumber");
 
 	*AltSettingNumber = (UCHAR)request.intf.altsetting_number;
