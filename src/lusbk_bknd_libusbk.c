@@ -20,6 +20,7 @@ binary distributions.
 #include "lusbk_handles.h"
 #include "lusbk_stack_collection.h"
 
+
 // warning C4127: conditional expression is constant.
 #pragma warning(disable: 4127)
 
@@ -846,6 +847,23 @@ KUSB_EXP BOOL KUSB_API UsbK_ControlTransfer(
 
 	Pub_To_Priv_UsbK(InterfaceHandle, handle, return FALSE);
 	ErrorSetAction(!PoolHandle_Inc_UsbK(handle), ERROR_RESOURCE_NOT_AVAILABLE, return FALSE, "->PoolHandle_Inc_UsbK");
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// in case of a "SET_CONFIGURATION" control request - translate to
+	// LIBUSB_IOCTL_SET_CONFIGURATION request.
+	// we want to make sure mpdpp driver rebuilds the stack,
+	#define USB_REQ_TYPE(request_type) ((request_type) & (0x03 << 5))
+	#define USB_REQUEST_TYPE_STANDARD (0x00 << 5)
+
+	if ((USB_REQ_TYPE(SetupPacket.RequestType) == USB_REQUEST_TYPE_STANDARD)
+		&& (SetupPacket.Request == USB_REQUEST_SET_CONFIGURATION))
+	{
+		request.configuration.configuration = SetupPacket.Value;
+		success = SubmitSimpleSyncRequest(LIBUSB_IOCTL_SET_CONFIGURATION);
+
+		return success;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
 
 	ioctlCode = (SetupPacket.RequestType & USB_ENDPOINT_DIRECTION_MASK) ? LIBUSB_IOCTL_CONTROL_READ : LIBUSB_IOCTL_CONTROL_WRITE;
 
