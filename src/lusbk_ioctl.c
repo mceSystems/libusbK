@@ -40,7 +40,14 @@ BOOL Ioctl_Async(__in HANDLE dev,
 	}
 
 	if (overlapped)
-		return DeviceIoControl(dev, code, in, in_size, out, out_size, NULL, overlapped);
+	{
+		if (TRUE == DeviceIoControl(dev, code, in, in_size, out, out_size, NULL, overlapped))
+		{
+			SetLastError(ERROR_IO_PENDING);
+		}
+
+		return FALSE;
+	}
 
 	USBERR("overlapped cannot be null.");
 	return LusbwError(ret);

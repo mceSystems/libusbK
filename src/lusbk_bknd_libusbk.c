@@ -399,7 +399,7 @@ KUSB_EXP BOOL KUSB_API UsbK_SetCurrentAlternateSetting(
 	request.intf.interface_number = sharedInterface->ID;
 	request.intf.altsetting_number = AltSettingNumber;
 
-	success = SubmitSimpleSyncRequest(LIBUSBK_IOCTL_SET_INTERFACE);
+	success = SubmitSimpleSyncRequest(LIBUSB_IOCTL_SET_INTERFACE);
 	ErrorNoSet(!success, Error, "Failed setting AltSettingNumber %u", AltSettingNumber);
 
 	Update_SharedInterface_AltSetting(sharedInterface, AltSettingNumber);
