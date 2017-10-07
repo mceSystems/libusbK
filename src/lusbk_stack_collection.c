@@ -123,6 +123,45 @@ static void u_Add_Interface(PKUSB_HANDLE_INTERNAL Handle, PDESCRIPTOR_ITERATOR d
 	u_Add_Pipe(altInterfaceEL, desc);
 }
 
+static BOOL mce_Find_Interface(__in PKUSB_HANDLE_INTERNAL Handle)
+{
+	DESCRIPTOR_ITERATOR desc;
+	PUSB_CONFIGURATION_DESCRIPTOR cfg = Handle->Device->ConfigDescriptor;
+
+	Mem_Zero(&desc, sizeof(desc));
+	desc.Ptr.Offset = (PUCHAR)cfg;
+	desc.Remaining = (LONG)cfg->wTotalLength;
+
+	BOOL searchADB = FALSE;
+	char findInterface[0x40] = { 0 };
+	GetEnvironmentVariable("mce-find-interface", findInterface, sizeof(findInterface));
+	if (0 == _stricmp("adb", findInterface)) {
+		searchADB = TRUE;
+	}
+	else
+		return LusbwError(ERROR_SUCCESS);
+
+	while (u_Desc_Next(&desc))
+	{
+		if (desc.Ptr.Comn->bDescriptorType != USB_DESCRIPTOR_TYPE_INTERFACE)
+			continue;
+
+		if (searchADB) {
+			//search for USB\Class_ff&SubClass_42&Prot_01
+			if ((0xff == desc.Ptr.Intf->bInterfaceClass) &&
+				(0x42 == desc.Ptr.Intf->bInterfaceSubClass) &&
+				((0x01 == desc.Ptr.Intf->bInterfaceProtocol) || // adb
+				(0x03 == desc.Ptr.Intf->bInterfaceProtocol)))	// fastboot
+			{
+				Handle->Selected_SharedInterface_Index = desc.Ptr.Intf->bInterfaceNumber;
+				return LusbwError(ERROR_SUCCESS);
+			}
+		}
+	}
+
+	return LusbwError(ERROR_FILE_NOT_FOUND);
+}
+
 static BOOL u_Init_Config(__in PKUSB_HANDLE_INTERNAL Handle)
 {
 	DWORD errorCode = ERROR_SUCCESS;
@@ -238,8 +277,12 @@ BOOL UsbStack_Init(
 		ErrorNoSet(!success, Error, "->Init_ConfigCB");
 
 		handle->Selected_SharedInterface_Index = 0;
+
 		success = u_Init_Config(handle);
 		ErrorNoSet(!success, Error, "->u_Init_Config");
+
+		success = mce_Find_Interface(handle);
+		ErrorNoSet(!success, Error, "->mce_Find_Interface");
 
 		// load a driver API
 		LibK_LoadDriverAPI(handle->Device->DriverAPI, DriverID);
