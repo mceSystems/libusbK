@@ -860,6 +860,8 @@ KUSB_EXP BOOL KUSB_API UsbK_ControlTransfer(
 	{
 		request.configuration.configuration = SetupPacket.Value;
 		success = SubmitSimpleSyncRequest(LIBUSB_IOCTL_SET_CONFIGURATION);
+		
+		PoolHandle_Dec_UsbK(handle);
 
 		return success;
 	}
